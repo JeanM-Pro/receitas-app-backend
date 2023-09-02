@@ -2,18 +2,17 @@ import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
 import multer from "multer";
-import * as admin from "firebase-admin";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { validationResult, check } from "express-validator";
-import * as serviceAccount from "./receitas-toti-firebase-adminsdk-mg0p4-d7529f5155.json";
+import admin from "firebase-admin";
+
+const serviceAccount = "receitas-toti-firebase-adminsdk-mg0p4-713f782cc0.json";
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "receitas-toti.appspot.com", // El nombre del bucket, no la URL completa
 });
 
 const storage = admin.storage();
-const storageRef = storage.ref();
 
 const app = express();
 const allowedOrigins = ["http://localhost:3000"];
@@ -31,7 +30,7 @@ const receitas = [];
 const storageConfig = multer.memoryStorage(); // Renombrado para evitar conflictos
 const upload = multer({ storage: storageConfig });
 
-const validateRecipe = [
+const validateFormData = [
   check("title").notEmpty().withMessage("El título es obligatorio"),
   check("category").notEmpty().withMessage("La categoría es obligatoria"),
   check("ingredients")
@@ -61,13 +60,17 @@ app.get("/api/receitas/:id", (req, res) => {
 // Ruta POST para agregar una receta
 app.post(
   "/api/receitas",
-  validateRecipe,
+  validateFormData,
   upload.single("image"),
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({
+        success: false,
+        message: "La solicitud contiene errores de validación",
+        errors: errors.array(),
+      });
     }
 
     const receita = {
