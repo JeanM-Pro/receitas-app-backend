@@ -5,17 +5,17 @@ Clonar repositorio
 Instalar las dependencias (npm install)
 Inicializar el proyecto (node index.mjs)
 
-Obtener todos los contactos:
+Obtener todas as receitas:
 /api/contacts
 
 Obtener contacto por id:
-/api/contacts/:id
+/api/receitas/:id
 
 Agregar contacto:
-/api/contacts
+/api/receitas
 
 Editar contacto:
-/api/contacts/:id
+/api/receitas/:id
 
 Eliminar contacto:
-/api/contacts/:id
+/api/receitas/:id
