@@ -2,17 +2,16 @@ import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
 import multer from "multer";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { validationResult, check } from "express-validator";
-import admin from "firebase-admin";
+import { getStorage } from "firebase-admin/storage";
+import { initializeApp, cert } from "firebase-admin/app";
+import { uploadBytes, ref } from "firebase/storage";
 
-const serviceAccount = "receitas-toti-firebase-adminsdk-mg0p4-713f782cc0.json";
+const serviceAccount = "./service-data.json";
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+initializeApp({
+  credential: cert(serviceAccount),
+  storageBucket: "receitas-toti.appspot.com",
 });
-
-const storage = admin.storage();
 
 const app = express();
 const allowedOrigins = ["http://localhost:3000"];
@@ -24,24 +23,18 @@ app.use(
   })
 );
 
-const receitas = [];
+// Stores
+
+const storage = getStorage();
+console.log(storage);
+
+// console.log(bucket.file("images"));
 
 // Configura multer para manejar la carga de imágenes
 const storageConfig = multer.memoryStorage(); // Renombrado para evitar conflictos
 const upload = multer({ storage: storageConfig });
 
-const validateFormData = [
-  check("title").notEmpty().withMessage("El título es obligatorio"),
-  check("category").notEmpty().withMessage("La categoría es obligatoria"),
-  check("ingredients")
-    .notEmpty()
-    .withMessage("Los ingredientes son obligatorios"),
-  check("steps").notEmpty().withMessage("Los pasos son obligatorios"),
-  check("duration").notEmpty().withMessage("La duración es obligatoria"),
-  check("durationUnit")
-    .notEmpty()
-    .withMessage("La unidad de duración es obligatoria"),
-];
+const receitas = [];
 
 app.get("/", (req, res) => {
   res.send("Node JS api");
@@ -58,53 +51,40 @@ app.get("/api/receitas/:id", (req, res) => {
 });
 
 // Ruta POST para agregar una receta
-app.post(
-  "/api/receitas",
-  validateFormData,
-  upload.single("image"),
-  async (req, res) => {
-    const errors = validationResult(req);
+app.post("/api/receitas", upload.single("image"), async (req, res) => {
+  const receita = {
+    id: uuidv4(),
+    title: req.body.title,
+    category: req.body.category,
+    ingredients: req.body.ingredients,
+    steps: req.body.steps,
+    duration: req.body.duration,
+    durationUnit: req.body.durationUnit,
+  };
 
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: "La solicitud contiene errores de validación",
-        errors: errors.array(),
-      });
+  if (req.file) {
+    // Si se ha subido una imagen, guarda el archivo en Firebase Storage
+    // Obtiene la referencia al bucket
+    const storageRef = ref(storage, `images/${req.file.originalname}`);
+    // const imageRef = bucket.file(`images/${req.file.originalname}`);
+
+    try {
+      // Sube la imagen y obtén su URL
+      await uploadBytes(storageRef, req.file.buffer);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Agrega la URL de la imagen a la receta
+      receita.image = downloadURL;
+    } catch (error) {
+      console.error("Error al cargar la imagen:", error);
+      return res.status(500).send("Error al cargar la imagen");
     }
-
-    const receita = {
-      id: uuidv4(),
-      title: req.body.title,
-      category: req.body.category,
-      ingredients: req.body.ingredients,
-      steps: req.body.steps,
-      duration: req.body.duration,
-      durationUnit: req.body.durationUnit,
-    };
-
-    if (req.file) {
-      // Si se ha subido una imagen, guarda el archivo en Firebase Storage
-      const imageRef = ref(storage, `images/${req.file.originalname}`);
-
-      try {
-        // Sube la imagen y obtén su URL
-        const snapshot = await uploadBytes(imageRef, req.file.buffer);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-
-        // Agrega la URL de la imagen a la receta
-        receita.image = downloadURL;
-      } catch (error) {
-        console.error("Error al cargar la imagen:", error);
-        return res.status(500).send("Error al cargar la imagen");
-      }
-    }
-
-    // Agregamos la receta a la lista
-    receitas.push(receita);
-    res.send(receita);
   }
-);
+
+  // Agregamos la receta a la lista
+  receitas.push(receita);
+  res.send(receita);
+});
 
 app.put("/api/receitas/:id", (req, res) => {
   const receitaId = req.params.id;
