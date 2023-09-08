@@ -1,17 +1,6 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
-import multer from "multer";
-import { getStorage } from "firebase-admin/storage";
-import { initializeApp, cert } from "firebase-admin/app";
-import { uploadBytes, ref } from "firebase/storage";
-
-const serviceAccount = "./service-data.json";
-
-initializeApp({
-  credential: cert(serviceAccount),
-  storageBucket: "receitas-toti.appspot.com",
-});
 
 const app = express();
 const allowedOrigins = ["http://localhost:3000"];
@@ -23,16 +12,37 @@ app.use(
   })
 );
 
-// Stores
+const usuarios = [];
 
-const storage = getStorage();
-console.log(storage);
+app.post("/api/usuarios", (req, res) => {
+  const usuario = {
+    id: uuidv4(),
+    userId: req.body.userId,
+    nombre: req.body.nombre,
+    correo: req.body.correo,
+    img: req.body.img,
+    redesSociales: {
+      facebook: req.body.redesSociales.facebook,
+      twitter: req.body.redesSociales.twitter,
+      instagram: req.body.redesSociales.instagram,
+      linkedin: req.body.redesSociales.linkedin,
+    },
+  };
 
-// console.log(bucket.file("images"));
+  // Agregamos el usuario a la lista
+  usuarios.unshift(usuario);
+  res.send(usuario);
+});
 
-// Configura multer para manejar la carga de imágenes
-const storageConfig = multer.memoryStorage(); // Renombrado para evitar conflictos
-const upload = multer({ storage: storageConfig });
+app.get("/api/usuarios", (req, res) => {
+  res.json(usuarios);
+});
+
+app.get("/api/usuarios/:id", (req, res) => {
+  const usuario = usuarios.find((c) => c.userId === req.params.userId);
+  if (!usuario) return res.status(404).send("Usuario no encontrado");
+  else res.send(usuario);
+});
 
 const receitas = [];
 
@@ -51,7 +61,7 @@ app.get("/api/receitas/:id", (req, res) => {
 });
 
 // Ruta POST para agregar una receta
-app.post("/api/receitas", upload.single("image"), async (req, res) => {
+app.post("/api/receitas", (req, res) => {
   const receita = {
     id: uuidv4(),
     title: req.body.title,
@@ -60,29 +70,17 @@ app.post("/api/receitas", upload.single("image"), async (req, res) => {
     steps: req.body.steps,
     duration: req.body.duration,
     durationUnit: req.body.durationUnit,
+    img: req.body.img,
+    userName: req.body.userName,
+    userImage: req.body.userImage,
+    userId: req.body.userId,
+    favoritedUsers: req.body.favoritedUsers,
+    likes: req.body.likes,
+    disLikes: req.body.disLikes,
   };
 
-  if (req.file) {
-    // Si se ha subido una imagen, guarda el archivo en Firebase Storage
-    // Obtiene la referencia al bucket
-    const storageRef = ref(storage, `images/${req.file.originalname}`);
-    // const imageRef = bucket.file(`images/${req.file.originalname}`);
-
-    try {
-      // Sube la imagen y obtén su URL
-      await uploadBytes(storageRef, req.file.buffer);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // Agrega la URL de la imagen a la receta
-      receita.image = downloadURL;
-    } catch (error) {
-      console.error("Error al cargar la imagen:", error);
-      return res.status(500).send("Error al cargar la imagen");
-    }
-  }
-
   // Agregamos la receta a la lista
-  receitas.push(receita);
+  receitas.unshift(receita);
   res.send(receita);
 });
 
@@ -100,8 +98,15 @@ app.put("/api/receitas/:id", (req, res) => {
     category: req.body.category,
     ingredients: req.body.ingredients,
     steps: req.body.steps,
+    img: req.body.img,
+    userName: req.body.userName,
+    userImage: req.body.userImage,
+    userId: req.body.userId,
     duration: req.body.duration,
     durationUnit: req.body.durationUnit,
+    favoritedUsers: req.body.favoritedUsers,
+    likes: req.body.likes,
+    disLikes: req.body.disLikes,
   };
 
   receitas[receitaIndex] = updatedReceita;
