@@ -3,7 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
 
 const app = express();
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://receitas-app-backend-production.up.railway.app",
+];
 
 app.use(express.json());
 app.use(
