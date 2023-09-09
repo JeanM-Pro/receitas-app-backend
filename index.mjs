@@ -47,32 +47,6 @@ app.get("/api/usuarios/:userId", (req, res) => {
   else res.send(usuario);
 });
 
-app.put("/api/usuarios/:userId", (req, res) => {
-  const userId = req.params.userId;
-  const usuarioIndex = usuarios.findIndex((u) => u.id === userId);
-
-  if (usuarioIndex === -1) {
-    return res.status(404).send("Usuario no encontrado");
-  }
-
-  const updatedUsuario = {
-    id: userId,
-    userId,
-    nombre: req.body.nombre,
-    correo: req.body.correo,
-    img: req.body.img,
-    redesSociales: {
-      facebook: req.body.redesSociales.facebook,
-      twitter: req.body.redesSociales.twitter,
-      instagram: req.body.redesSociales.instagram,
-      linkedin: req.body.redesSociales.linkedin,
-    },
-  };
-
-  usuarios[usuarioIndex] = updatedUsuario;
-  res.send(updatedUsuario);
-});
-
 const receitas = [];
 
 app.get("/", (req, res) => {
