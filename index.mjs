@@ -48,8 +48,8 @@ app.get("/api/usuarios/:userId", (req, res) => {
   else res.send(usuario);
 });
 
-app.put("/api/usuarios/:id/redesSociales", (req, res) => {
-  const usuarioId = req.params.id;
+app.put("/api/usuarios/:userId/redesSociales", (req, res) => {
+  const usuarioId = req.params.userId;
   const redesSociales = req.body.redesSociales;
 
   // Buscamos el usuario por su ID
