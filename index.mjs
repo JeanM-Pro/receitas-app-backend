@@ -49,22 +49,28 @@ app.get("/api/usuarios/:userId", (req, res) => {
 
 app.put("/api/usuarios/:userId", (req, res) => {
   const userId = req.params.userId;
-  const usuarioActualizado = req.body;
-
-  // Buscamos el usuario por su ID
   const usuarioIndex = usuarios.findIndex((u) => u.id === userId);
 
   if (usuarioIndex === -1) {
     return res.status(404).send("Usuario no encontrado");
   }
 
-  // Actualizamos los datos del usuario
-  usuarios[usuarioIndex] = {
-    ...usuarios[usuarioIndex],
-    ...usuarioActualizado,
+  const updatedUsuario = {
+    id: uuidv4(),
+    userId,
+    nombre: req.body.nombre,
+    correo: req.body.correo,
+    img: req.body.img,
+    redesSociales: {
+      facebook: req.body.redesSociales.facebook,
+      twitter: req.body.redesSociales.twitter,
+      instagram: req.body.redesSociales.instagram,
+      linkedin: req.body.redesSociales.linkedin,
+    },
   };
 
-  res.send(usuarios[usuarioIndex]);
+  usuarios[usuarioIndex] = updatedUsuario;
+  res.send(updatedUsuario);
 });
 
 const receitas = [];
