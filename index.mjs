@@ -56,7 +56,7 @@ app.put("/api/usuarios/:userId", (req, res) => {
   }
 
   const updatedUsuario = {
-    id: uuidv4(),
+    id: userId,
     userId,
     nombre: req.body.nombre,
     correo: req.body.correo,
