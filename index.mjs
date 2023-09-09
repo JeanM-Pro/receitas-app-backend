@@ -41,8 +41,8 @@ app.post("/api/usuarios", (req, res) => {
 app.get("/api/usuarios", (req, res) => {
   res.json(usuarios);
 });
-
-app.get("/api/usuarios/:id", (req, res) => {
+// Ovbtener usuario por userId
+app.get("/api/usuarios/:userId", (req, res) => {
   const usuario = usuarios.find((c) => c.userId === req.params.userId);
   if (!usuario) return res.status(404).send("Usuario no encontrado");
   else res.send(usuario);
