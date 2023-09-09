@@ -42,6 +42,22 @@ app.get("/api/usuarios", (req, res) => {
   res.json(usuarios);
 });
 
+app.get("/api/usuarios/:userId", (req, res) => {
+  const userId = req.params.userId;
+  // Buscar el usuario en la lista de usuarios por userId
+  const usuarioEncontrado = usuarios.find(
+    (usuario) => usuario.userId === userId
+  );
+
+  if (!usuarioEncontrado) {
+    // Si no se encuentra el usuario, responder con un código de estado 404 (No encontrado)
+    return res.status(404).json({ mensaje: "Usuario no encontrado" });
+  }
+
+  // Si se encuentra el usuario, responder con los datos del usuario
+  res.json(usuarioEncontrado);
+});
+
 app.get("/api/usuarios/:id", (req, res) => {
   const usuario = usuarios.find((c) => c.userId === req.params.userId);
   if (!usuario) return res.status(404).send("Usuario no encontrado");
