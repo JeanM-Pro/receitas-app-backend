@@ -5,7 +5,6 @@ import cors from "cors";
 const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://receitas-app-backend-production.up.railway.app",
   "https://receitas-toti.web.app",
 ];
 
@@ -48,28 +47,24 @@ app.get("/api/usuarios/:userId", (req, res) => {
   else res.send(usuario);
 });
 
-app.put("/api/usuarios/:userId/redesSociales", (req, res) => {
-  const usuarioId = req.params.userId;
-  const redesSociales = req.body.redesSociales;
+app.put("/api/usuarios/:id", (req, res) => {
+  const usuarioId = req.params.id;
+  const usuarioActualizado = req.body;
 
   // Buscamos el usuario por su ID
-  const usuario = usuarios.find((u) => u.id === usuarioId);
+  const usuarioIndex = usuarios.findIndex((u) => u.id === usuarioId);
 
-  if (!usuario) {
+  if (usuarioIndex === -1) {
     return res.status(404).send("Usuario no encontrado");
   }
 
-  // Actualizamos las redes sociales del usuario
-  usuario.redesSociales.facebook =
-    redesSociales.facebook || usuario.redesSociales.facebook;
-  usuario.redesSociales.twitter =
-    redesSociales.twitter || usuario.redesSociales.twitter;
-  usuario.redesSociales.instagram =
-    redesSociales.instagram || usuario.redesSociales.instagram;
-  usuario.redesSociales.linkedin =
-    redesSociales.linkedin || usuario.redesSociales.linkedin;
+  // Actualizamos los datos del usuario
+  usuarios[usuarioIndex] = {
+    ...usuarios[usuarioIndex],
+    ...usuarioActualizado,
+  };
 
-  res.send(usuario);
+  res.send(usuarios[usuarioIndex]);
 });
 
 const receitas = [];
