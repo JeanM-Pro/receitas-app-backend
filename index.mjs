@@ -47,12 +47,12 @@ app.get("/api/usuarios/:userId", (req, res) => {
   else res.send(usuario);
 });
 
-app.put("/api/usuarios/:id", (req, res) => {
-  const usuarioId = req.params.id;
+app.put("/api/usuarios/:userId", (req, res) => {
+  const userId = req.params.userId;
   const usuarioActualizado = req.body;
 
   // Buscamos el usuario por su ID
-  const usuarioIndex = usuarios.findIndex((u) => u.id === usuarioId);
+  const usuarioIndex = usuarios.findIndex((u) => u.id === userId);
 
   if (usuarioIndex === -1) {
     return res.status(404).send("Usuario no encontrado");
