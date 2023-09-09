@@ -6,6 +6,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "https://receitas-app-backend-production.up.railway.app",
+  "https://receitas-toti.web.app",
 ];
 
 app.use(express.json());
