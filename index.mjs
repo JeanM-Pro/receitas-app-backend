@@ -24,17 +24,34 @@ app.post("/api/usuarios", (req, res) => {
     nombre: req.body.nombre,
     correo: req.body.correo,
     img: req.body.img,
-    redesSociales: {
-      facebook: req.body.redesSociales.facebook,
-      twitter: req.body.redesSociales.twitter,
-      instagram: req.body.redesSociales.instagram,
-      linkedin: req.body.redesSociales.linkedin,
-    },
   };
 
   // Agregamos el usuario a la lista
   usuarios.unshift(usuario);
   res.send(usuario);
+});
+
+app.put("/api/usuarios/:userId", (req, res) => {
+  const { userId } = req.params;
+  const { nombre, correo, img } = req.body;
+
+  const index = usuarios.findIndex((usuario) => usuario.userId === userId);
+
+  if (index === -1) {
+    return res.status(404).json({ message: "Usuario no encontrado" });
+  }
+
+  if (nombre) {
+    usuarios[index].nombre = nombre;
+  }
+  if (correo) {
+    usuarios[index].correo = correo;
+  }
+  if (img) {
+    usuarios[index].img = img;
+  }
+
+  res.json(usuarios[index]);
 });
 
 app.get("/api/usuarios", (req, res) => {
